@@ -22,7 +22,11 @@ class AirConStatus:
                  fan_direction1: EnumControl.FanDirection = None,
                  fan_direction2: EnumControl.FanDirection = None,
                  humidity: EnumControl.Humidity = None,
-                 mode: EnumControl.Mode = None):
+                 mode: EnumControl.Mode = None,
+                 hum_allow: bool = False,
+                 fresh_air_allow: bool = False,
+                 fresh_air_humidification: EnumControl.FreshAirHumidification =  None,
+                 three_dfresh: EnumControl.ThreeDFresh = None):
         self.current_temp = current_temp      # type: int
         self.setted_temp = setted_temp        # type: int
         self.switch = switch                  # type: EnumControl.Switch
@@ -32,6 +36,10 @@ class AirConStatus:
         self.fan_direction2 = fan_direction2  # type: EnumControl.FanDirection
         self.humidity = humidity              # type: EnumControl.Humidity
         self.mode = mode                      # type: EnumControl.Mode
+        self.hum_allow = hum_allow       # type: bool
+        self.fresh_air_allow = fresh_air_allow    # type: bool
+        self.fresh_air_humidification = fresh_air_humidification #EnumControl.FreshAirHumidification
+        self.three_dfresh  = three_dfresh     #EnumControl.ThreeDFresh
 
 
 class AirCon(Device):
@@ -48,6 +56,9 @@ class AirCon(Device):
         self.fan_direction2: EnumFanDirection = EnumFanDirection.FIX
         self.fan_volume: EnumFanVolume = EnumFanVolume.FIX
         self.fan_volume_auto: bool = False
+        self.temp_set: bool = False
+        self.hum_fresh_air_allow: int = 0
+        self.three_dfresh_allow: bool = False
         self.heat_mode: int = 0
         self.more_dry_mode: int = 0
         self.out_door_run_cond: EnumOutDoorRunCond = EnumOutDoorRunCond.VENT
@@ -80,6 +91,8 @@ class HD(Device):
         Device.__init__(self)
         self.switch: EnumSwitch
 
+class Sensor(Device):
+    """do nothing"""
 
 class Room:
     def __init__(self):
@@ -92,3 +105,4 @@ class Room:
         self.name: str = ''
         self.type: int = 0
         self.ventilation: Ventilation = Ventilation()
+        self.sensor: Sensor = Sensor()

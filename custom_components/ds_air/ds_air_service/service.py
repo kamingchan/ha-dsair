@@ -47,7 +47,8 @@ class SocketClient:
             try:
                 self._s.sendall(p.to_string())
                 done = True
-            except Exception:
+            except Exception as e:
+                print ("send false:", e)
                 time.sleep(3)
                 self.do_connect()
         self._locker.release()
@@ -83,6 +84,9 @@ class RecvThread(Thread):
             for i in res:
                 _log('recv:')
                 _log(display(i))
+               # print ('recv:',display(i))
+                if i is None:
+                    continue
                 self._locker.acquire()
                 i.do()
                 self._locker.release()
@@ -110,6 +114,8 @@ class Service:
     _rooms = None  # type: typing.List[Room]
     _aircons = None  # type: typing.List[AirCon]
     _new_aircons = None  # type: typing.List[AirCon]
+    _ventilation = None
+    _sensor = None
     _bathrooms = None  # type: typing.List[AirCon]
     _ready = False  # type: bool
     _none_stat_dev_cnt = 0  # type: int
@@ -145,8 +151,20 @@ class Service:
         Service._ready = True
 
     @staticmethod
+    def get_aircons():
+        return Service._aircons
+
+    @staticmethod
     def get_new_aircons():
         return Service._new_aircons
+ 
+    @staticmethod
+    def get_ventilation():
+        return Service._ventilation
+
+    @staticmethod
+    def get_sensor():
+        return Service._sensor
 
     @staticmethod
     def control(aircon: AirCon, status: AirConStatus):

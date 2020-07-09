@@ -1,3 +1,4 @@
+#encoding=utf-8
 """
 Demo platform that offers a fake climate device.
 
@@ -34,7 +35,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_PORT): cv.port
 })
 
-DEFAULT_HOST = '192.168.1.150'
+DEFAULT_HOST = '192.168.31.253'
 DEFAULT_PORT = 8008
 
 _LOGGER = logging.getLogger(__name__)
@@ -61,7 +62,19 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     climates = []
     for aircon in Service.get_new_aircons():
         climates.append(DsAir(aircon))
+    for aircon in Service.get_aircons():
+        climates.append(DsAir(aircon))
+
+#    for ven in Service.get_ventilation():
+#        print ("&&&&&&&&aricon:",ven)
+#        climates.append(DsAir(ven))
+#    add_entities(climates)
+#    for sences in Service.sences():
+#        print ("&&&&&&&&aricon:",sences)
+#        climates.append(DsAir(sences))
     add_entities(climates)
+
+
 
 
 class DsAir(ClimateEntity):

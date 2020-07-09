@@ -155,7 +155,7 @@ class AirConQueryStatusParam(AirconParam):
         s.write1(self._device.room_id)
         s.write1(self._device.unit_id)
         t = EnumControl.Type
-        s.write1(t.SWITCH | t.MODE | t.AIR_FLOW | t.CURRENT_TEMP | t.SETTED_TEMP | t.FAN_DIRECTION | t.HUMIDITY)
+        s.write1(t.SWITCH | t.MODE | t.AIR_FLOW | t.FRESH_AIR_HUMIDIFICATION | t.SETTED_TEMP | t.FAN_DIRECTION | t.HUMIDITY)
 
     @property
     def device(self):
