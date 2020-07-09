@@ -1,10 +1,11 @@
 # Daikin DS-AIR Custom Component For Home Assistant
 
-此项目是Home Assistant平台[DS-AIR](https://www.daikin-china.com.cn/newha/products/4/19/DS-AIR/)自定义组件的实现
+此项目是Home Assistant平台[金制空气](https://www.daikin-china.com.cn/newha/products/4/19/jzkq/)自定义组件的实现
 
-支持的网关设备型号为DTA117B611，其他网关的支持情况未知
 
-由于家里只有中央空调，对于老款型号、浴室系列空调等等没有测试条件。理论上也能部分支持
+fork了 mypel 的 https://github.com/mypal/ha-dsair   DS-dsair的版本
+支持的网关设备型号为DTA117C611，mypel的版本号中间字母是B，设备支持的类型多了几个
+
 
 # 接入方法
 
@@ -20,8 +21,8 @@ climate:
 
 # TODO
 
-根据APP反解显示，网关可控制新风、地暖、HD(不知道是个啥设备)、新版空调、老版空调和浴室设备。由于我家只有新版室内机，所以目前只实现了这个。其他设备实现没写完，理论上都不能够支持。
+根据APP反解显示，网关可控制新风、地暖、HD、新版空调、老版空调和浴室设备。此版本支持新版室内机,也支持老版本的室内机，后面会继续开发支持新风和空气传感器。
 
 # 开发过程
 
-本组件开发过程可在[blog](https://www.mypal.wang/blog/lun-yi-ci-jia-yong-kong-diao-jie-ru-hazhe-teng-jing-li/)查看
+fork了 mypel 的 https://github.com/mypal/ha-dsair   DS-dsair的版本
