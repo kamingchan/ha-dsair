@@ -48,7 +48,7 @@ class SocketClient:
                 self._s.sendall(p.to_string())
                 done = True
             except Exception as e:
-                print ("send false:", e)
+                print("send false:", e)
                 time.sleep(3)
                 self.do_connect()
         self._locker.release()
@@ -150,7 +150,6 @@ class Service:
                     if i.unit_id:
                         i.alias += str(i.unit_id)
         self._ready = True
-
 
     def get_aircons(self):
         return self._aircons
