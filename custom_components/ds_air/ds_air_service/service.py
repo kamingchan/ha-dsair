@@ -93,19 +93,20 @@ class RecvThread(Thread):
 
 
 class HeartBeatThread(Thread):
-    def __init__(self):
+    def __init__(self, service):
         super().__init__()
+        self.service = service
 
     def run(self) -> None:
         super().run()
         time.sleep(30)
         cnt = 0
         while True:
-            Service.send_msg(HeartbeatParam())
+            self.service.send_msg(HeartbeatParam())
             cnt += 1
             if cnt == 5:
                 cnt = 0
-                Service.poll_aircon_status()
+                self.service.poll_aircon_status()
             time.sleep(60)
 
 
@@ -120,119 +121,106 @@ class Service:
     _ready = False  # type: bool
     _none_stat_dev_cnt = 0  # type: int
     _status_hook = []  # type: typing.List[(AirCon, types.FunctionType)]
-    _heartbeat_thread = HeartBeatThread()
+    _heartbeat_thread = None
 
-    @staticmethod
-    def init(host: str, port: int):
-        Service._socket_client = SocketClient(host, port)
-        Service._socket_client.send(HandShakeParam())
-        Service._heartbeat_thread.start()
-        while Service._rooms is None or Service._aircons is None \
-                or Service._new_aircons is None or Service._bathrooms is None:
+    def __init__(self, host: str, port: int):
+        self._socket_client = SocketClient(host, port)
+        self._socket_client.send(HandShakeParam())
+        self._heartbeat_thread = HeartBeatThread(self)
+        self._heartbeat_thread.start()
+        while self._rooms is None or self._aircons is None \
+                or self._new_aircons is None or self._bathrooms is None:
             time.sleep(1)
-        for i in Service._aircons:
-            for j in Service._rooms:
+        for i in self._aircons:
+            for j in self._rooms:
                 if i.room_id == j.id:
                     i.alias = j.alias
                     if i.unit_id:
                         i.alias += str(i.unit_id)
-        for i in Service._new_aircons:
-            for j in Service._rooms:
+        for i in self._new_aircons:
+            for j in self._rooms:
                 if i.room_id == j.id:
                     i.alias = j.alias
                     if i.unit_id:
                         i.alias += str(i.unit_id)
-        for i in Service._bathrooms:
-            for j in Service._rooms:
+        for i in self._bathrooms:
+            for j in self._rooms:
                 if i.room_id == j.id:
                     i.alias = j.alias
                     if i.unit_id:
                         i.alias += str(i.unit_id)
-        Service._ready = True
+        self._ready = True
 
-    @staticmethod
-    def get_aircons():
-        return Service._aircons
 
-    @staticmethod
-    def get_new_aircons():
-        return Service._new_aircons
- 
-    @staticmethod
-    def get_ventilation():
-        return Service._ventilation
+    def get_aircons(self):
+        return self._aircons
 
-    @staticmethod
-    def get_sensor():
-        return Service._sensor
+    def get_new_aircons(self):
+        return self._new_aircons
 
-    @staticmethod
-    def control(aircon: AirCon, status: AirConStatus):
+    def get_ventilation(self):
+        return self._ventilation
+
+    def get_sensor(self):
+        return self._sensor
+
+    def control(self, aircon: AirCon, status: AirConStatus):
         p = AirConControlParam(aircon, status)
-        Service.send_msg(p)
+        self.send_msg(p)
 
-    @staticmethod
-    def register_status_hook(device: AirCon, hook):
-        Service._status_hook.append((device, hook))
+    def register_status_hook(self, device: AirCon, hook):
+        self._status_hook.append((device, hook))
 
     # ----split line---- above for component, below for inner call
 
-    @staticmethod
-    def is_ready() -> bool:
-        return Service._ready
+    def is_ready(self) -> bool:
+        return self._ready
 
-    @staticmethod
-    def send_msg(p: Param):
+    def send_msg(self, p: Param):
         """send msg to climate gateway"""
-        Service._socket_client.send(p)
+        self._socket_client.send(p)
 
-    @staticmethod
-    def get_rooms():
-        return Service._rooms
+    def get_rooms(self):
+        return self._rooms
 
-    @staticmethod
-    def set_rooms(v: typing.List[Room]):
-        Service._rooms = v
+    def set_rooms(self, v: typing.List[Room]):
+        self._rooms = v
 
-    @staticmethod
-    def set_device(t: EnumDevice, v: typing.List[AirCon]):
-        Service._none_stat_dev_cnt += len(v)
+    def set_device(self, t: EnumDevice, v: typing.List[AirCon]):
+        self._none_stat_dev_cnt += len(v)
         if t == EnumDevice.AIRCON:
-            Service._aircons = v
+            self._aircons = v
         elif t == EnumDevice.NEWAIRCON:
-            Service._new_aircons = v
+            self._new_aircons = v
         else:
-            Service._bathrooms = v
+            self._bathrooms = v
 
-    @staticmethod
-    def set_aircon_status(target: EnumDevice, room: int, unit: int, status: AirConStatus):
-        if Service._ready:
-            Service.update_aircon(target, room, unit, status=status)
+    def set_aircon_status(self, target: EnumDevice, room: int, unit: int, status: AirConStatus):
+        if self._ready:
+            self.update_aircon(target, room, unit, status=status)
         else:
             li = []
             if target == EnumDevice.AIRCON:
-                li = Service._aircons
+                li = self._aircons
             elif target == EnumDevice.NEWAIRCON:
-                li = Service._new_aircons
+                li = self._new_aircons
             elif target == EnumDevice.BATHROOM:
-                li = Service._bathrooms
+                li = self._bathrooms
             for i in li:
                 if i.unit_id == unit and i.room_id == room:
                     i.status = status
-                    Service._none_stat_dev_cnt -= 1
+                    self._none_stat_dev_cnt -= 1
                     break
 
-    @staticmethod
-    def poll_aircon_status():
-        for i in Service._new_aircons:
+    def poll_aircon_status(self):
+        for i in self._new_aircons:
             p = AirConQueryStatusParam()
             p.target = EnumDevice.NEWAIRCON
             p.device = i
-            Service.send_msg(p)
+            self.send_msg(p)
 
-    @staticmethod
-    def update_aircon(target: EnumDevice, room: int, unit: int, **kwargs):
-        li = Service._status_hook
+    def update_aircon(self, target: EnumDevice, room: int, unit: int, **kwargs):
+        li = self._status_hook
         for item in li:
             i, func = item
             if i.unit_id == unit and i.room_id == room and get_device_by_aircon(i) == target:
